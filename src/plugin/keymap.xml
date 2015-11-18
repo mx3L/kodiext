@@ -1,0 +1,16 @@
+<keymap>
+
+<map context="KodiPlayerActions">
+    <key id="KEY_INFO" mapto="infoPressed" flags="m" />
+    <key id="KEY_MENU" mapto="menuPressed" flags="m" />
+    <key id="KEY_PREVIOUS" mapto="prevPressed" flags="m" />
+    <key id="KEY_NEXT" mapto = "nextPressed" flags="m" />
+</map>
+
+<map context="InfoBarAspectChangeActions">
+    <key id="KEY_ZOOM" mapto="aspectChange" flags="m" />
+    <key id="KEY_5" mapto="aspectChange" flags="m" />
+</map>
+
+</keymap>
+
