@@ -1,4 +1,5 @@
 from Queue import Queue
+import json
 import os
 import threading
 
@@ -38,6 +39,7 @@ OP_CODE_PLAY_STOP) = range(4)
 
 KODIRUN_SCRIPT = "kodi;kodiext -T"
 KODIEXT_SOCKET = "/tmp/kodiext.socket"
+KODIEXTIN = "/tmp/kodiextin.json"
 
 def FBLock():
     print"[KodiLauncher] FBLock"
@@ -137,7 +139,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
             Notifications.AddNotificationWithCallback(self.__seekToPosition, MessageBox, _("Resuming playback"), timeout=4, type=MessageBox.TYPE_INFO, enable_input=False)
 
     def __seekToPosition(self, callback=None):
-        self.doSeek(self.__position)
+        self.doSeek(long(self.__position))
 
     def setImage(self, image):
         self.__image = image
@@ -162,6 +164,51 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
 
     def doEofInternal(self, playing):
         self.close()
+
+class Meta(object):
+    def __init__(self, meta):
+        self.meta = meta
+
+    def getTitle(self):
+        title = u""
+        vTag = self.meta.get('videoInfoTag')
+        if vTag:
+            if vTag.get('showtitle'):
+                title = vTag["showtitle"]
+                episode = vTag.get("episode", -1)
+                try:
+                    episode = int(episode)
+                except:
+                    episode = -1
+                season = vTag.get("season", -1)
+                try:
+                    season = int(season)
+                except:
+                    season = -1
+                if season > 0 and episode > 0:
+                    title += u" S%02dE%02d"%(season, episode) 
+                episodeTitle = vTag.get("title")
+                if episodeTitle:
+                    title += u" - " + episodeTitle
+            else:
+                title = vTag.get("title") or vTag.get("originaltitle")
+                year = vTag.get("year")
+                if year and title:
+                    title+= u" (" + str(year) + u")"
+        if not title:
+            title = self.meta.get("title")
+        if not title:
+            listItem = self.meta.get("listItem")
+            if listItem:
+                title = listItem.get("label")
+        return title
+
+    def getStartTime(self):
+        startTime = 0
+        playerOptions = self.meta.get("playerOptions")
+        if playerOptions:
+            startTime = playerOptions.get("startTime", 0)
+        return startTime
 
 
 class E2KodiExtRequestHandler(KodiExtRequestHandler):
@@ -220,6 +267,7 @@ class E2KodiExtServer(UDSServer):
             return
         FBUnlock(); RCUnlock()
 
+        # parse subtitles and play path from data
         subtitles = []
         dataSplit = data.strip().split("\n")
         if len(dataSplit) > 1:
@@ -235,16 +283,40 @@ class E2KodiExtServer(UDSServer):
         for idx, subtitlesPath in enumerate(subtitles):
             self.logger.debug("handlePlayMessage: subtitlesPath[%d] = %s", idx, subtitlesPath)
 
-        sref = eServiceReference(4097, 0, playPath)
-        sref.setName(playPath)
+        # load meta info from json file provided by Kodi Enigma2Player
+        try:
+            meta = json.load(open(KODIEXTIN, "r"))
+        except Exception as e:
+            self.logger.error("failed to load meta from %s: %s", KODIEXTIN, str(e))
+            meta = {}
+        else:
+            if meta.get("strPath") and meta["strPath"] not in data:
+                self.logger.error("meta data for another filepath?")
+                meta = {}
 
+        # create Kodi player Screen
         noneFnc = lambda:None
         self.kodiPlayer = self.session.openWithCallback(self.kodiPlayerExitCB, KodiVideoPlayer,
             noneFnc, noneFnc, noneFnc, noneFnc, noneFnc)
+
+        # load subtitles
         if len(subtitles) > 0 and hasattr(self.kodiPlayer, "loadSubs"):
             # TODO allow to play all subtitles
             subtitlesPath = subtitles[0]
             self.kodiPlayer.loadSubs(subtitlesPath)
+
+        # create service reference
+        sref = eServiceReference(4097, 0, playPath)
+
+        # set title, image if provided
+        title = Meta(meta).getTitle()
+        if not title:
+            title = os.path.basename(playPath.split("#")[0])
+        sref.setName(title.encode('utf-8'))
+
+        # set start position if provided
+        self.kodiPlayer.setStartPosition(Meta(meta).getStartTime())
+
         self.kodiPlayer.playService(sref)
         self.messageIn.put((True, None))
 
