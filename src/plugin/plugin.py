@@ -35,11 +35,20 @@ except ImportError:
 (OP_CODE_EXIT,
 OP_CODE_PLAY,
 OP_CODE_PLAY_STATUS,
-OP_CODE_PLAY_STOP) = range(4)
+OP_CODE_PLAY_STOP,
+OP_CODE_SWITCH_TO_ENIGMA2,
+OP_CODE_SWITCH_TO_KODI) = range(6)
 
 KODIRUN_SCRIPT = "kodi;kodiext -T"
+KODIRESUME_SCRIPT = "kodiext -P %s -K"
 KODIEXT_SOCKET = "/tmp/kodiext.socket"
 KODIEXTIN = "/tmp/kodiextin.json"
+
+KODI_LAUNCHER = None
+
+SESSION = None
+SERVER = None
+SERVER_THREAD = None
 
 def FBLock():
     print"[KodiLauncher] FBLock"
@@ -59,6 +68,11 @@ def RCUnlock():
 
 def kodiStopped(data, retval, extraArgs):
     print '[KodiLauncher] kodi stopped: retval = %d' % retval
+
+def kodiResumeStopped(data, retval, extraArgs):
+    print '[KodiLauncher] kodi resume script stopped: retval = %d' % retval
+    if retval > 0:
+        KODI_LAUNCHER.stop()
 
 class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHide, InfoBarSeek, InfoBarAspectChange, InfoBarAudioSelection, InfoBarNotifications, HelpableScreen, Screen):
     skin = """
@@ -220,10 +234,8 @@ class E2KodiExtRequestHandler(KodiExtRequestHandler):
 
 
 class E2KodiExtServer(UDSServer):
-    def __init__(self, session, stopCB):
+    def __init__(self):
         UDSServer.__init__(self, KODIEXT_SOCKET, E2KodiExtRequestHandler)
-        self.session = session
-        self.stopCB = stopCB
         self.kodiPlayer = None
         self.subtitles = []
         self.messageIn = Queue()
@@ -246,11 +258,15 @@ class E2KodiExtServer(UDSServer):
             self.handlePlayStatusMessage(status, data)
         elif opcode == OP_CODE_PLAY_STOP:
             self.handlePlayStopMessage(status, data)
+        elif opcode == OP_CODE_SWITCH_TO_ENIGMA2:
+            self.handleSwitchToEnigma2Message(status, data)
+        elif opcode == OP_CODE_SWITCH_TO_KODI:
+            self.handleSwitchToKodiMessage(status, data)
 
     def handleExitMessage(self, status, data):
         self.messageIn.put((True, None))
         self.stopTimer = eTimer()
-        self.stopTimer.callback.append(self.stopCB)
+        self.stopTimer.callback.append(KODI_LAUNCHER.stop)
         self.stopTimer.start(500, True)
 
     def handlePlayStatusMessage(self, status, data):
@@ -258,6 +274,15 @@ class E2KodiExtServer(UDSServer):
 
     def handlePlayStopMessage(self, status, data):
         FBLock(); RCLock()
+        self.messageIn.put((True, None))
+
+    def handleSwitchToEnigma2Message(self, status, data):
+        self.messageIn.put((True, None))
+        self.stopTimer = eTimer()
+        self.stopTimer.callback.append(KODI_LAUNCHER.stop)
+        self.stopTimer.start(500, True)
+
+    def handleSwitchToKodiMessage(self, status, data):
         self.messageIn.put((True, None))
 
     def handlePlayMessage(self, status, data):
@@ -296,7 +321,7 @@ class E2KodiExtServer(UDSServer):
 
         # create Kodi player Screen
         noneFnc = lambda:None
-        self.kodiPlayer = self.session.openWithCallback(self.kodiPlayerExitCB, KodiVideoPlayer,
+        self.kodiPlayer = SESSION.openWithCallback(self.kodiPlayerExitCB, KodiVideoPlayer,
             noneFnc, noneFnc, noneFnc, noneFnc, noneFnc)
 
         # load subtitles
@@ -321,7 +346,7 @@ class E2KodiExtServer(UDSServer):
         self.messageIn.put((True, None))
 
     def kodiPlayerExitCB(self, callback=None):
-        self.session.nav.stopService()
+        SESSION.nav.stopService()
         self.kodiPlayer = None
         self.subtitles = []
 
@@ -339,34 +364,64 @@ class KodiLauncher(Screen):
         self.onClose.append(RCUnlock)
 
     def startup(self):
-        FBLock()
-        self.startKodiExtServer()
-        self.startKodi()
-
-    def startKodiExtServer(self):
-        try:
-            os.remove(KODIEXT_SOCKET)
-        except:
-            pass
-        self.server = E2KodiExtServer(self.session, self.stop)
-        self.serverThread = threading.Thread(target = self.server.serve_forever)
-        self.serverThread.start()
+        def psCallback(data, retval, extraArgs):
+            FBLock()
+            kodiProc = None
+            procs = data.split('\n')
+            if len(procs) > 0:
+                for p in procs:
+                    if 'kodi.bin' in p:
+                        if kodiProc is not None:
+                            print '[KodiLauncher] startup - there are more kodi processes running!'
+                            return self.stop()
+                        kodiProc = p.split()
+            if kodiProc is not None:
+                kodiPid = int(kodiProc[0])
+                print "[KodiLauncher] startup: kodi is running, pid = %d , resuming..."% kodiPid
+                self.resumeKodi(kodiPid)
+            else:
+                print "[KodiLauncher] startup: kodi is not running, starting..."
+                self.startKodi()
+        Console().ePopen("ps | grep kodi.bin | grep -v grep", psCallback)
 
     def startKodi(self):
         Console().ePopen(KODIRUN_SCRIPT, kodiStopped)
 
+    def resumeKodi(self, pid):
+        Console().ePopen(KODIRESUME_SCRIPT % pid, kodiResumeStopped)
+
     def stop(self):
         FBUnlock()
-        self.server.shutdown()
-        self.serverThread.join()
         if self.previousService:
             self.session.nav.playService(self.previousService)
         self.close()
 
+def autoStart(reason, **kwargs):
+    print "[KodiLauncher] autoStart - reason = %d" % reason
+    global SERVER_THREAD
+    global SERVER
+    if reason == 0:
+        try:
+            os.remove(KODIEXT_SOCKET)
+        except OSError:
+            pass
+        SERVER = E2KodiExtServer()
+        SERVER_THREAD = threading.Thread(target = SERVER.serve_forever)
+        SERVER_THREAD.start()
+    elif reason == 1:
+        SERVER.shutdown()
+        SERVER_THREAD.join()
+
 def startLauncher(session, **kwargs):
     RCUnlock()
-    session.open(KodiLauncher)
+    global SESSION
+    SESSION = session
+    global KODI_LAUNCHER
+    KODI_LAUNCHER = session.open(KodiLauncher)
 
 def Plugins(**kwargs):
-    return [PluginDescriptor("Kodi", PluginDescriptor.WHERE_PLUGINMENU, "Kodi Launcher", fnc=startLauncher)]
+    return [
+            PluginDescriptor("Kodi", PluginDescriptor.WHERE_AUTOSTART, "Kodi Launcher", fnc=autoStart),
+            PluginDescriptor("Kodi", PluginDescriptor.WHERE_EXTENSIONSMENU, "Kodi Launcher", fnc=startLauncher),
+            PluginDescriptor("Kodi", PluginDescriptor.WHERE_PLUGINMENU, "Kodi Launcher", fnc=startLauncher)]
 

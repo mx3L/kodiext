@@ -20,7 +20,8 @@ enum
   OP_CODE_PLAY,
   OP_CODE_PLAY_STATUS,
   OP_CODE_PLAY_STOP,
-  OP_CODE_END,
+  OP_CODE_SWITCH_TO_ENIGMA2,
+  OP_CODE_SWITCH_TO_KODI,
 };
 
 static const char *opcode_to_str(int opcode)
@@ -40,9 +41,13 @@ static const char *opcode_to_str(int opcode)
     case OP_CODE_PLAY_STOP:
       opcode_str = "OP_CODE_PLAY_STOP";
       break;
-    case OP_CODE_END:
-      opcode_str = "OP_CODE_END";
+    case OP_CODE_SWITCH_TO_ENIGMA2:
+      opcode_str = "OP_CODE_SWITCH_TO_ENIGMA2";
       break;
+    case OP_CODE_SWITCH_TO_KODI:
+      opcode_str = "OP_CODE_SWITCH_TO_KODI";
+      break;
+
     default:
       opcode_str = "OP_CODE_UKNOWN";
       break;
@@ -91,10 +96,12 @@ int main(int argc, char **argv)
   char *surl = NULL;
   char *pid = NULL;
   int stop = 0;
+  int tokodi = 0;
+  int toenigma2 = 0;
   int c;
   opterr = 0;
 
-  while ((c = getopt (argc, argv, "U:P:S:T")) != -1)
+  while ((c = getopt (argc, argv, "U:P:S:TEK")) != -1)
     switch (c)
       {
       case 'U':
@@ -105,6 +112,12 @@ int main(int argc, char **argv)
         break;
       case 'T':
         stop = 1;
+        break;
+      case 'E':
+        toenigma2 = 1;
+        break;
+      case 'K':
+        tokodi = 1;
         break;
       case 'P':
         pid = optarg;
@@ -123,15 +136,16 @@ int main(int argc, char **argv)
         abort ();
       }
 
-  if (!stop && (purl == NULL || pid == NULL))
+  if (!(stop || ((tokodi || toenigma2) && pid != NULL) || (purl != NULL && pid != NULL)))
   {
-    printf("Usage: kodiext -U playurl -P ppid [-S subtitlesurl] [-T]\n");
+    printf("Usage: kodiext -U playurl -P ppid [-S subtitlesurl] [-T] [-E] [-K]\n");
     return 1;
   }
 
-  printf("playurl = %s, subtitlesurl = %s, stop = %d\n", purl, surl, stop);
+  printf("playurl = %s, subtitlesurl = %s, stop = %d, toenigma2 = %d, tokodi = %d\n", purl, surl, stop, toenigma2, tokodi);
 
   struct packet_header ph;
+  char configcmd[64];
   char *data = NULL;
 
   if (stop)
@@ -145,6 +159,39 @@ int main(int argc, char **argv)
       fprintf(stderr, "cannot exit!\n");
       return 2;
     }
+    return 0;
+  }
+
+  if (toenigma2)
+  {
+    ph.opcode = OP_CODE_SWITCH_TO_ENIGMA2;
+    ph.result = 0;
+    ph.length = 0;
+    send_message(&ph, data);
+    if (!ph.result)
+    {
+      fprintf(stderr, "cannot switch to enigma2!\n");
+      return 2;
+    }
+    sprintf(configcmd, "config -pid %s -visible off", pid);
+    system(configcmd);
+
+    return 0;
+  }
+
+  if (tokodi)
+  {
+    ph.opcode = OP_CODE_SWITCH_TO_KODI;
+    ph.result = 0;
+    ph.length = 0;
+    send_message(&ph, data);
+    if (!ph.result)
+    {
+      fprintf(stderr, "cannot switch to kodi!\n");
+      return 2;
+    }
+    sprintf(configcmd, "config -pid %s -visible on", pid);
+    system(configcmd);
     return 0;
   }
 
@@ -169,7 +216,6 @@ int main(int argc, char **argv)
     return 3;
   }
 
-  char configcmd[64];
   sprintf(configcmd, "config -pid %s -visible off", pid);
   system(configcmd);
   system("touch /tmp/playing.lock 2>/dev/null");
