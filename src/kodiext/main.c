@@ -63,7 +63,7 @@ static char *packet_to_str(const struct packet_header *ph, char *packet_str)
   return packet_str;
 }
 
-static void send_message(struct packet_header *ph, char *data)
+static void send_message(struct packet_header *ph, char *datain, char **dataout)
 {
   char packet_str[128];
   int sockfd;
@@ -79,11 +79,17 @@ static void send_message(struct packet_header *ph, char *data)
   if (connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0)
     err_sys("connect_error");
 
-  printf("sent %s\n", packet_to_str(ph, packet_str));
+  //fprintf(stderr,"sent %s\n", packet_to_str(ph, packet_str));
   Writen(sockfd, ph , sizeof(*ph));
-  Writen(sockfd, data , ph->length);
+  Writen(sockfd, datain , ph->length);
   Readn(sockfd, ph, sizeof(*ph));
-  printf("received %s\n", packet_to_str(ph, packet_str));
+  if (ph->length > 0 && dataout != NULL)
+  {
+    *dataout = (char *) malloc(ph->length * sizeof(char) + 1);
+    Readn(sockfd, *dataout, ph->length);
+    *(*dataout + ph->length) = '\0';
+  }
+  //fprintf(stderr, "received %s\n", packet_to_str(ph, packet_str));
 
   if (close(sockfd) < 0)
     err_sys("close_error");
@@ -138,11 +144,11 @@ int main(int argc, char **argv)
 
   if (!(stop || ((tokodi || toenigma2) && pid != NULL) || (purl != NULL && pid != NULL)))
   {
-    printf("Usage: kodiext -U playurl -P ppid [-S subtitlesurl] [-T] [-E] [-K]\n");
+    fprintf(stderr, "Usage: kodiext -U playurl -P ppid [-S subtitlesurl] [-T] [-E] [-K]\n");
     return 1;
   }
 
-  printf("playurl = %s, subtitlesurl = %s, stop = %d, toenigma2 = %d, tokodi = %d\n", purl, surl, stop, toenigma2, tokodi);
+  fprintf(stderr, "playurl = %s, subtitlesurl = %s, stop = %d, toenigma2 = %d, tokodi = %d\n", purl, surl, stop, toenigma2, tokodi);
 
   struct packet_header ph;
   char configcmd[64];
@@ -153,7 +159,7 @@ int main(int argc, char **argv)
     ph.opcode = OP_CODE_EXIT;
     ph.result = 0;
     ph.length = 0;
-    send_message(&ph, data);
+    send_message(&ph, data, NULL);
     if (!ph.result)
     {
       fprintf(stderr, "cannot exit!\n");
@@ -167,7 +173,7 @@ int main(int argc, char **argv)
     ph.opcode = OP_CODE_SWITCH_TO_ENIGMA2;
     ph.result = 0;
     ph.length = 0;
-    send_message(&ph, data);
+    send_message(&ph, data, NULL);
     if (!ph.result)
     {
       fprintf(stderr, "cannot switch to enigma2!\n");
@@ -184,7 +190,7 @@ int main(int argc, char **argv)
     ph.opcode = OP_CODE_SWITCH_TO_KODI;
     ph.result = 0;
     ph.length = 0;
-    send_message(&ph, data);
+    send_message(&ph, data, NULL);
     if (!ph.result)
     {
       fprintf(stderr, "cannot switch to kodi!\n");
@@ -205,7 +211,7 @@ int main(int argc, char **argv)
   else
     data = purl;
   ph.length = strlen(data);
-  send_message(&ph, data);
+  send_message(&ph, data, NULL);
 
   if (surl != NULL)
     free(data);
@@ -219,19 +225,30 @@ int main(int argc, char **argv)
   sprintf(configcmd, "config -pid %s -visible off", pid);
   system(configcmd);
   system("touch /tmp/playing.lock 2>/dev/null");
+
+  char *dataout = NULL;
   while(ph.result)
   {
     sleep(1);
+
     ph.opcode = OP_CODE_PLAY_STATUS;
     ph.result = 0;
     ph.length = 0;
-    send_message(&ph, NULL);
+    send_message(&ph, data, &dataout);
+    if (dataout != NULL)
+    {
+      fputs(dataout, stdout);
+      fputc('\n', stdout);
+      fflush(stdout);
+      free(dataout);
+      dataout = NULL;
+    }
   }
 
   ph.opcode = OP_CODE_PLAY_STOP;
   ph.result = 0;
   ph.length = 0;
-  send_message(&ph, NULL);
+  send_message(&ph, NULL, NULL);
 
   if (ph.opcode == OP_CODE_PLAY_STOP && !ph.result)
   {

@@ -16,7 +16,7 @@ from Screens.Screen import Screen
 from Tools import Notifications
 
 from e2utils import InfoBarAspectChange, WebPixmap, MyAudioSelection, \
-    StatusScreen
+    StatusScreen, getPlayPositionInSeconds, getDurationInSeconds
 from enigma import eServiceReference, eTimer, ePythonMessagePump, \
     iPlayableService, fbClass, eRCInput
 from server import KodiExtRequestHandler, UDSServer
@@ -270,7 +270,17 @@ class E2KodiExtServer(UDSServer):
         self.stopTimer.start(500, True)
 
     def handlePlayStatusMessage(self, status, data):
-        self.messageIn.put((self.kodiPlayer is not None, None))
+        position = getPlayPositionInSeconds(SESSION)
+        duration = getDurationInSeconds(SESSION)
+        if position and duration:
+            # decoder sometimes provides invalid position after seeking
+            if position > duration:
+                position = None
+        statusMessage = {
+            "duration": duration,
+            "playing": self.kodiPlayer is not None,
+            "position": position}
+        self.messageIn.put((self.kodiPlayer is not None, json.dumps(statusMessage)))
 
     def handlePlayStopMessage(self, status, data):
         FBLock(); RCLock()

@@ -39,7 +39,7 @@ def getPlayPositionPts(session):
     service = session.nav.getCurrentService()
     seek = service and service.seek()
     position = seek and seek.getPlayPosition()
-    position = not position[0] and position[1] or None
+    position = position and not position[0] and position[1] or None
     return position
 
 def getPlayPositionInSeconds(session):
@@ -47,6 +47,19 @@ def getPlayPositionInSeconds(session):
     if position is not None:
         position = position / 90000
     return position
+
+def getDurationPts(session):
+    service = session.nav.getCurrentService()
+    seek = service and service.seek()
+    duration = seek and seek.getLength()
+    duration = duration and not duration[0] and duration[1] or None
+    return duration
+
+def getDurationInSeconds(session):
+    duration = getDurationPts(session)
+    if duration is not None:
+        duration = duration / 90000
+    return duration
 
 class WebPixmap(GUIComponent):
     GUI_WIDGET = ePixmap
