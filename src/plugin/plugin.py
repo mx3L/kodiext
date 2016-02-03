@@ -39,7 +39,7 @@ OP_CODE_PLAY_STOP,
 OP_CODE_SWITCH_TO_ENIGMA2,
 OP_CODE_SWITCH_TO_KODI) = range(6)
 
-KODIRUN_SCRIPT = "kodi;kodiext -T"
+KODIRUN_SCRIPT = "unset PYTHONPATH;kodi;kodiext -T"
 KODIRESUME_SCRIPT = "kodiext -P %s -K"
 KODIEXT_SOCKET = "/tmp/kodiext.socket"
 KODIEXTIN = "/tmp/kodiextin.json"
