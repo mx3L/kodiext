@@ -392,13 +392,17 @@ class KodiLauncher(Screen):
             else:
                 print "[KodiLauncher] startup: kodi is not running, starting..."
                 self.startKodi()
-        Console().ePopen("ps | grep kodi.bin | grep -v grep", psCallback)
+
+        self._checkConsole = Console()
+        self._checkConsole.ePopen("ps | grep kodi.bin | grep -v grep", psCallback)
 
     def startKodi(self):
-        Console().ePopen(KODIRUN_SCRIPT, kodiStopped)
+        self._startConsole = Console()
+        self._startConsole.ePopen(KODIRUN_SCRIPT, kodiStopped)
 
     def resumeKodi(self, pid):
-        Console().ePopen(KODIRESUME_SCRIPT % pid, kodiResumeStopped)
+        self._resumeConsole = Console()
+        self._resumeConsole.ePopen(KODIRESUME_SCRIPT % pid, kodiResumeStopped)
 
     def stop(self):
         FBUnlock()
