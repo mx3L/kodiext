@@ -18,7 +18,7 @@ from Tools import Notifications
 from e2utils import InfoBarAspectChange, WebPixmap, MyAudioSelection, \
     StatusScreen, getPlayPositionInSeconds, getDurationInSeconds
 from enigma import eServiceReference, eTimer, ePythonMessagePump, \
-    iPlayableService, fbClass, eRCInput
+    iPlayableService, fbClass, eRCInput, getDesktop
 from server import KodiExtRequestHandler, UDSServer
 from Tools.BoundFunction import boundFunction
 
@@ -49,6 +49,17 @@ KODI_LAUNCHER = None
 SESSION = None
 SERVER = None
 SERVER_THREAD = None
+
+_g_dw, _g_dh = 1280, 720
+def SaveDesktopInfo():
+        global _g_dw, _g_dh
+        try:
+                _g_dw = getDesktop(0).size().width()
+                _g_dh = getDesktop(0).size().height()
+        except: _g_dw,_g_dh = 1280,720
+        print "[XBMC] Desktop size [%dx%d]" % (_g_dw,_g_dh)
+        open("/tmp/dw.info", "w").write(str(_g_dw) + "x" + str(_g_dh))
+SaveDesktopInfo()
 
 def FBLock():
     print"[KodiLauncher] FBLock"
