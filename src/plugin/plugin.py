@@ -392,7 +392,6 @@ class KodiLauncher(Screen):
             else:
                 print "[KodiLauncher] startup: kodi is not running, starting..."
                 self.startKodi()
-                self.stretchKodi()
 
         self._checkConsole = Console()
         self._checkConsole.ePopen("ps | grep kodi.bin | grep -v grep", psCallback)
@@ -400,25 +399,6 @@ class KodiLauncher(Screen):
     def startKodi(self):
         self._startConsole = Console()
         self._startConsole.ePopen(KODIRUN_SCRIPT, kodiStopped)
-
-    def stretchKodi(self):
-        def startConfigListTimer():
-            self._configListTimer.start(500, True)
-
-        def configListTimerCallback():
-            def configListConsoleCallback(data, retval, extraArgs):
-                pids = data.splitlines()
-                #print "[KodiLauncher] found %d clients"%len(pids)
-                if len(pids) == 1:
-                    startConfigListTimer()
-                else:
-                    self._configConsole.ePopen("config -pid %s -full"% pids[-1].strip())
-            self._configConsole.ePopen("config -list pid", configListConsoleCallback)
-
-        self._configListTimer = eTimer()
-        self._configListTimer.callback.append(configListTimerCallback)
-        self._configConsole = Console()
-        startConfigListTimer()
 
     def resumeKodi(self, pid):
         self._resumeConsole = Console()
