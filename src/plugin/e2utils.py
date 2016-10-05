@@ -10,6 +10,7 @@ from Components.Label import Label
 from Components.ServiceEventTracker import ServiceEventTracker
 from Components.Sources.StaticText import StaticText
 from Screens.AudioSelection import AudioSelection
+from Screens.ChoiceBox import ChoiceBox
 from Screens.Screen import Screen
 
 from skin import parseColor
@@ -60,6 +61,13 @@ def getDurationInSeconds(session):
     if duration is not None:
         duration = duration / 90000
     return duration
+
+def seekToPts(session, pts):
+    service = session.nav.getCurrentService()
+    seek = service and service.seek()
+    if seek and seek.isCurrentlySeekable():
+        return seek.seekTo(pts)
+
 
 class WebPixmap(GUIComponent):
     GUI_WIDGET = ePixmap
@@ -335,4 +343,49 @@ class StatusScreen(Screen):
     def hideStatus(self):
         self.hide()
         self['status'].setText("")
+
+
+# pretty much openpli's one but simplified
+class InfoBarSubservicesSupport(object):
+    def __init__(self):
+        self["InfoBarSubservicesActions"] = HelpableActionMap(self, 
+                "ColorActions", { "green": (self.showSubservices, _("Show subservices"))}, -2)
+        self.__timer = eTimer()
+        self.__timer.callback.append(self.__seekToCurrentPosition)
+        self.onClose.append(self.__timer.stop)
+
+    def showSubservices(self):
+        service = self.session.nav.getCurrentService()
+        service_ref = self.session.nav.getCurrentlyPlayingServiceReference()
+        subservices = service and service.subServices()
+        numsubservices = subservices and subservices.getNumberOfSubservices() or 0
+
+        selection = 0
+        choice_list = []
+        for idx in range(0, numsubservices):
+            subservice_ref = subservices.getSubservice(idx)
+            if service_ref.toString() == subservice_ref.toString():
+                selection = idx
+            choice_list.append((subservice_ref.getName(), subservice_ref))
+        if numsubservices > 1:
+            self.session.openWithCallback(self.subserviceSelected, ChoiceBox,
+                title = _("Please select subservice..."), list = choice_list, 
+                selection = selection, skin_name="SubserviceSelection")
+
+    def subserviceSelected(self, service_ref):
+        if service_ref:
+            self.__timer.stop()
+            self.__playpos = getPlayPositionPts(self.session) or 0
+            duration = getDurationPts(self.session) or 0
+            if (self.__playpos > 0 and duration > 0
+                    and self.__playpos < duration):
+                self.__timer.start(500, True)
+            self.session.nav.playService(service_ref[1])
+
+    def __seekToCurrentPosition(self):
+        if getPlayPositionPts(self.session) is None:
+            self.__timer.start(500, True)
+        else:
+            seekToPts(self.session, self.__playpos)
+            del self.__playpos
 
