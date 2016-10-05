@@ -16,7 +16,8 @@ from Screens.Screen import Screen
 from Tools import Notifications
 
 from e2utils import InfoBarAspectChange, WebPixmap, MyAudioSelection, \
-    StatusScreen, getPlayPositionInSeconds, getDurationInSeconds
+    StatusScreen, getPlayPositionInSeconds, getDurationInSeconds, \
+    InfoBarSubservicesSupport
 from enigma import eServiceReference, eTimer, ePythonMessagePump, \
     iPlayableService, fbClass, eRCInput, getDesktop
 from server import KodiExtRequestHandler, UDSServer
@@ -85,7 +86,7 @@ def kodiResumeStopped(data, retval, extraArgs):
     if retval > 0:
         KODI_LAUNCHER.stop()
 
-class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHide, InfoBarSeek, InfoBarAspectChange, InfoBarAudioSelection, InfoBarNotifications, HelpableScreen, Screen):
+class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHide, InfoBarSeek, InfoBarSubservicesSupport, InfoBarAspectChange, InfoBarAudioSelection, InfoBarNotifications, HelpableScreen, Screen):
     skin = """
         <screen title="custom service source" position="0, 500" size="1280,220" zPosition="1" backgroundColor="#55444444" flags="wfNoBorder">
             <widget name="image" position="20,10" size="200,200" alphatest="on" transparent="1"/>
@@ -115,6 +116,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
         SubsSupportStatus.__init__(self)
         InfoBarSeek.__init__(self)
         InfoBarShowHide.__init__(self)
+        InfoBarSubservicesSupport.__init__(self)
         InfoBarAspectChange.__init__(self)
         InfoBarAudioSelection.__init__(self)
         InfoBarNotifications.__init__(self)
