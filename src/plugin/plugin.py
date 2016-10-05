@@ -315,14 +315,23 @@ class E2KodiExtServer(UDSServer):
             return
         FBUnlock(); RCUnlock()
 
-        # parse subtitles and play path from data
+        # parse subtitles, play path and service type from data
+        sType = 4097
         subtitles = []
         dataSplit = data.strip().split("\n")
-        if len(dataSplit) > 1:
-            playPath, subtitlesStr = dataSplit[:2]
-            subtitles = subtitlesStr.split("|")
-        else:
+        if len(dataSplit) == 1:
             playPath = dataSplit[0]
+        if len(dataSplit) == 2:
+            playPath, subtitlesStr = dataSplit
+            subtitles = subtitlesStr.split("|")
+        elif len(dataSplit) >= 3:
+            playPath, subtitlesStr, sTypeStr = dataSplit[:3]
+            subtitles = subtitlesStr.split("|")
+            try:
+                sType = int(sTypeStr)
+            except ValueError:
+                self.logger.error("handlePlayMessage: '%s' is not a valid servicetype",
+                        sType)
         if playPath.startswith('http'):
             playPathSplit = playPath.split("|")
             if len(playPathSplit) > 1:
@@ -354,7 +363,7 @@ class E2KodiExtServer(UDSServer):
             self.kodiPlayer.loadSubs(subtitlesPath)
 
         # create service reference
-        sref = eServiceReference(4097, 0, playPath)
+        sref = eServiceReference(sType, 0, playPath)
 
         # set title, image if provided
         title = Meta(meta).getTitle()
