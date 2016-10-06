@@ -1,8 +1,15 @@
+import os
 import logging
 import SocketServer
 import struct
 
-logging.basicConfig(level=logging.DEBUG, format='%(name)s: %(message)s',)
+try:
+    loglevel = int(os.getenv("E2KODI_DEBUG_LVL", logging.ERROR))
+except Exception:
+    loglevel = logging.ERROR
+print "E2KODI_DEBUG_LVL = ", loglevel
+
+logging.basicConfig(level=loglevel, format='%(name)s: %(message)s',)
 
 class KodiExtRequestHandler(SocketServer.BaseRequestHandler):
 
