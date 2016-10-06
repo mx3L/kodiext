@@ -129,8 +129,11 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
         self.statusScreen = statusScreen
         self.defaultImage = None
         self.postAspectChange.append(self.showAspectChanged)
+        self.__timer = eTimer()
+        self.__timer.callback.append(self.__seekToPosition)
         self.__image = None
         self.__position = None
+        self.__firstStart = True
         self["image"] = WebPixmap(self.defaultImage, caching=False)
         self["directionActions"] = HelpableActionMap(self, "DirectionActions",
         {
@@ -156,17 +159,27 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
             iPlayableService.evStart : self.__evStart,
         })
         self.onClose.append(boundFunction(self.session.deleteDialog, self.statusScreen))
+        self.onClose.append(self.__timer.stop)
 
     def __evStart(self):
         if self.__image:
             self["image"].load(self.__image)
         else:
             self["image"].load(self.defaultImage)
-        if self.__position:
-            Notifications.AddNotificationWithCallback(self.__seekToPosition, MessageBox, _("Resuming playback"), timeout=4, type=MessageBox.TYPE_INFO, enable_input=False)
+        if self.__position and self.__firstStart:
+            self.__firstStart = False
+            Notifications.AddNotificationWithID("kodiplayer_seekto",
+                    MessageBox, _("Resuming playback"), timeout=0,
+                    type=MessageBox.TYPE_INFO, enable_input=False)
+            self.__timer.start(500, True)
 
-    def __seekToPosition(self, callback=None):
-        self.doSeek(long(self.__position))
+
+    def __seekToPosition(self):
+        if getPlayPositionInSeconds(self.session) is None:
+            self.__timer.start(500, True)
+        else:
+            Notifications.RemovePopup("kodiplayer_seekto")
+            self.doSeek(long(self.__position))
 
     def setImage(self, image):
         self.__image = image
