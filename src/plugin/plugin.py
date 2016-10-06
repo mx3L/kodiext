@@ -107,6 +107,8 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
             </widget>
         </screen>"""
 
+    RESUME_POPUP_ID = "kodiplayer_seekto"
+
     def __init__(self, session, playlistCallback, nextItemCallback, prevItemCallback, infoCallback, menuCallback):
         Screen.__init__(self, session)
         self.skinName = ['KodiVideoPlayer', 'MoviePlayer']
@@ -159,6 +161,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
             iPlayableService.evStart : self.__evStart,
         })
         self.onClose.append(boundFunction(self.session.deleteDialog, self.statusScreen))
+        self.onClose.append(boundFunction(Notifications.RemovePopup, self.RESUME_POPUP_ID))
         self.onClose.append(self.__timer.stop)
 
     def __evStart(self):
@@ -168,7 +171,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
             self["image"].load(self.defaultImage)
         if self.__position and self.__firstStart:
             self.__firstStart = False
-            Notifications.AddNotificationWithID("kodiplayer_seekto",
+            Notifications.AddNotificationWithID(self.RESUME_POPUP_ID,
                     MessageBox, _("Resuming playback"), timeout=0,
                     type=MessageBox.TYPE_INFO, enable_input=False)
             self.__timer.start(500, True)
@@ -178,7 +181,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
         if getPlayPositionInSeconds(self.session) is None:
             self.__timer.start(500, True)
         else:
-            Notifications.RemovePopup("kodiplayer_seekto")
+            Notifications.RemovePopup(self.RESUME_POPUP_ID)
             self.doSeek(long(self.__position))
 
     def setImage(self, image):
