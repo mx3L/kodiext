@@ -472,8 +472,15 @@ def startLauncher(session, **kwargs):
     KODI_LAUNCHER = session.open(KodiLauncher)
 
 def Plugins(**kwargs):
+    from enigma import getDesktop
+    screenwidth = getDesktop(0).size().width()
+    if screenwidth and screenwidth == 1920:
+        kodiext = 'kodiext_FHD.png'
+    else:
+        kodiext = 'kodiext_HD.png'
+
     return [
             PluginDescriptor("Kodi", PluginDescriptor.WHERE_AUTOSTART, "Kodi Launcher", fnc=autoStart),
             PluginDescriptor("Kodi", PluginDescriptor.WHERE_EXTENSIONSMENU, "Kodi Launcher", fnc=startLauncher),
-            PluginDescriptor("Kodi", PluginDescriptor.WHERE_PLUGINMENU, "Kodi Launcher", fnc=startLauncher)]
+            PluginDescriptor("Kodi", PluginDescriptor.WHERE_PLUGINMENU, "Kodi Launcher", icon=kodiext, fnc=startLauncher)]
 
