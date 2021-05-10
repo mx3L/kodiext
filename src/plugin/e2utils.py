@@ -353,7 +353,7 @@ class StatusScreen(Screen):
 # pretty much openpli's one but simplified
 class InfoBarSubservicesSupport(object):
     def __init__(self):
-        self["InfoBarSubservicesActions"] = HelpableActionMap(self, 
+        self["InfoBarSubservicesActions"] = HelpableActionMap(self,
                 "ColorActions", {"green": (self.showSubservices, _("Show subservices"))}, -2)
         self.__timer = eTimer()
         self.__timer.callback.append(self.__seekToCurrentPosition)
@@ -374,7 +374,7 @@ class InfoBarSubservicesSupport(object):
             choice_list.append((subservice_ref.getName(), subservice_ref))
         if numsubservices > 1:
             self.session.openWithCallback(self.subserviceSelected, ChoiceBox,
-                title=_("Please select subservice..."), list=choice_list, 
+                title=_("Please select subservice..."), list=choice_list,
                 selection=selection, skin_name="SubserviceSelection")
 
     def subserviceSelected(self, service_ref):
@@ -393,4 +393,3 @@ class InfoBarSubservicesSupport(object):
         else:
             seekToPts(self.session, self.__playpos)
             del self.__playpos
-

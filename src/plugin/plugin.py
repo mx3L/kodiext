@@ -242,7 +242,7 @@ class Meta(object):
                 except:
                     season = -1
                 if season > 0 and episode > 0:
-                    title += u" S%02dE%02d" % (season, episode) 
+                    title += u" S%02dE%02d" % (season, episode)
                 episodeTitle = vTag.get("title")
                 if episodeTitle:
                     title += u" - " + episodeTitle
@@ -502,4 +502,3 @@ def Plugins(**kwargs):
             PluginDescriptor("Kodi", PluginDescriptor.WHERE_AUTOSTART, "Kodi Launcher", fnc=autoStart),
             PluginDescriptor("Kodi", PluginDescriptor.WHERE_EXTENSIONSMENU, "Kodi Launcher", fnc=startLauncher),
             PluginDescriptor("Kodi", PluginDescriptor.WHERE_PLUGINMENU, "Kodi Launcher", icon=kodiext, fnc=startLauncher)]
-
