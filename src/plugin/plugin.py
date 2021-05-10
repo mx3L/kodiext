@@ -461,7 +461,7 @@ def autoStart(reason, **kwargs):
         except OSError:
             pass
         SERVER = E2KodiExtServer()
-        SERVER_THREAD = threading.Thread(target = SERVER.serve_forever)
+        SERVER_THREAD = threading.Thread(target=SERVER.serve_forever)
         SERVER_THREAD.start()
     elif reason == 1:
         SERVER.shutdown()

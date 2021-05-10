@@ -169,8 +169,7 @@ class BufferIndicatorDetailed(Screen):
         self.updateIntervalInMs = updateIntervalInMs
         self.updateTimer = eTimer()
         self.updateTimer.callback.append(self.updateStatus)
-        self.__event_tracker = ServiceEventTracker(screen=self, eventmap=
-            {
+        self.__event_tracker = ServiceEventTracker(screen=self, eventmap={
                 iPlayableService.evBuffering: self.__evBuffering,
                 iPlayableService.evStart: self.__evStart,
                 iPlayableService.evStopped: self.__evStopped,
@@ -369,8 +368,8 @@ class InfoBarSubservicesSupport(object):
             choice_list.append((subservice_ref.getName(), subservice_ref))
         if numsubservices > 1:
             self.session.openWithCallback(self.subserviceSelected, ChoiceBox,
-                title = _("Please select subservice..."), list = choice_list, 
-                selection = selection, skin_name="SubserviceSelection")
+                title=_("Please select subservice..."), list=choice_list, 
+                selection=selection, skin_name="SubserviceSelection")
 
     def subserviceSelected(self, service_ref):
         if service_ref:
