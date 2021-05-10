@@ -230,7 +230,7 @@ class Meta(object):
                 except:
                     season = -1
                 if season > 0 and episode > 0:
-                    title += u" S%02dE%02d"%(season, episode) 
+                    title += u" S%02dE%02d" % (season, episode) 
                 episodeTitle = vTag.get("title")
                 if episodeTitle:
                     title += u" - " + episodeTitle
@@ -238,7 +238,7 @@ class Meta(object):
                 title = vTag.get("title") or vTag.get("originaltitle")
                 year = vTag.get("year")
                 if year and title:
-                    title+= u" (" + str(year) + u")"
+                    title += u" (" + str(year) + u")"
         if not title:
             title = self.meta.get("title")
         if not title:
@@ -428,7 +428,7 @@ class KodiLauncher(Screen):
                         kodiProc = p.split()
             if kodiProc is not None:
                 kodiPid = int(kodiProc[0])
-                print "[KodiLauncher] startup: kodi is running, pid = %d , resuming..."% kodiPid
+                print "[KodiLauncher] startup: kodi is running, pid = %d , resuming..." % kodiPid
                 self.resumeKodi(kodiPid)
             else:
                 print "[KodiLauncher] startup: kodi is not running, starting..."
