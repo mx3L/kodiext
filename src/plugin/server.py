@@ -11,6 +11,7 @@ print "E2KODI_DEBUG_LVL = ", loglevel
 
 logging.basicConfig(level=loglevel, format='%(name)s: %(message)s',)
 
+
 class KodiExtRequestHandler(SocketServer.BaseRequestHandler):
 
     def __init__(self, request, client_address, server):

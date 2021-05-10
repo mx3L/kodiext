@@ -26,6 +26,7 @@ def toString(text):
         return text
     return str(text)
 
+
 def getAspect():
     val = AVSwitch().getAspectRatioSetting()
     if val == 0 or val == 1:
@@ -36,6 +37,7 @@ def getAspect():
         r = (16 * 576, 10 * 720)
     return r
 
+
 def getPlayPositionPts(session):
     service = session.nav.getCurrentService()
     seek = service and service.seek()
@@ -43,11 +45,13 @@ def getPlayPositionPts(session):
     position = position and not position[0] and position[1] or None
     return position
 
+
 def getPlayPositionInSeconds(session):
     position = getPlayPositionPts(session)
     if position is not None:
         position = position / 90000
     return position
+
 
 def getDurationPts(session):
     service = session.nav.getCurrentService()
@@ -56,11 +60,13 @@ def getDurationPts(session):
     duration = duration and not duration[0] and duration[1] or None
     return duration
 
+
 def getDurationInSeconds(session):
     duration = getDurationPts(session)
     if duration is not None:
         duration = duration / 90000
     return duration
+
 
 def seekToPts(session, pts):
     service = session.nav.getCurrentService()
@@ -210,6 +216,7 @@ class InfoBarBuffer(object):
         self.onClose.append(self.bufferScreen.hide)
         self.onClose.append(self.bufferScreen.doClose)
 
+
 class InfoBarAspectChange(object):
     """
     Simple aspect ratio changer
@@ -232,7 +239,6 @@ class InfoBarAspectChange(object):
         '16_9_4_3_pillarbox', '16_9_4_3_panscan', '16_9_4_3_nonlinear', '16_9_4_3_bestfit',
         '4_3_letterbox', '4_3_panscan', '4_3_bestfit'
     ]
-
 
     def __init__(self):
         self.postAspectChange = []

@@ -29,6 +29,7 @@ except ImportError:
     class SubsSupport(object):
         def __init__(self, *args, **kwargs):
             pass
+
     class SubsSupportStatus(object):
         def __init__(self, *args, **kwargs):
             pass
@@ -52,6 +53,8 @@ SERVER = None
 SERVER_THREAD = None
 
 _g_dw, _g_dh = 1280, 720
+
+
 def SaveDesktopInfo():
         global _g_dw, _g_dh
         try:
@@ -61,31 +64,40 @@ def SaveDesktopInfo():
             _g_dw, _g_dh = 1280, 720
         print "[XBMC] Desktop size [%dx%d]" % (_g_dw, _g_dh)
         open("/tmp/dw.info", "w").write(str(_g_dw) + "x" + str(_g_dh))
+
+
 SaveDesktopInfo()
+
 
 def FBLock():
     print"[KodiLauncher] FBLock"
     fbClass.getInstance().lock()
 
+
 def FBUnlock():
     print "[KodiLauncher] FBUnlock"
     fbClass.getInstance().unlock()
+
 
 def RCLock():
     print "[KodiLauncher] RCLock"
     eRCInput.getInstance().lock()
 
+
 def RCUnlock():
     print "[KodiLauncher] RCUnlock"
     eRCInput.getInstance().unlock()
 
+
 def kodiStopped(data, retval, extraArgs):
     print '[KodiLauncher] kodi stopped: retval = %d' % retval
+
 
 def kodiResumeStopped(data, retval, extraArgs):
     print '[KodiLauncher] kodi resume script stopped: retval = %d' % retval
     if retval > 0:
         KODI_LAUNCHER.stop()
+
 
 class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHide, InfoBarSeek, InfoBarSubservicesSupport, InfoBarAspectChange, InfoBarAudioSelection, InfoBarNotifications, HelpableScreen, Screen):
     skin = """
@@ -177,7 +189,6 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
                     type=MessageBox.TYPE_INFO, enable_input=False)
             self.__timer.start(500, True)
 
-
     def __seekToPosition(self):
         if getPlayPositionInSeconds(self.session) is None:
             self.__timer.start(500, True)
@@ -208,6 +219,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
 
     def doEofInternal(self, playing):
         self.close()
+
 
 class Meta(object):
     def __init__(self, meta):
@@ -401,6 +413,7 @@ class E2KodiExtServer(UDSServer):
         self.kodiPlayer = None
         self.subtitles = []
 
+
 class KodiLauncher(Screen):
     skin = """<screen position="fill" backgroundColor="#00000000" flags="wfNoBorder" title=" "></screen>"""
 
@@ -451,6 +464,7 @@ class KodiLauncher(Screen):
             self.session.nav.playService(self.previousService)
         self.close()
 
+
 def autoStart(reason, **kwargs):
     print "[KodiLauncher] autoStart - reason = %d" % reason
     global SERVER_THREAD
@@ -467,12 +481,14 @@ def autoStart(reason, **kwargs):
         SERVER.shutdown()
         SERVER_THREAD.join()
 
+
 def startLauncher(session, **kwargs):
     RCUnlock()
     global SESSION
     SESSION = session
     global KODI_LAUNCHER
     KODI_LAUNCHER = session.open(KodiLauncher)
+
 
 def Plugins(**kwargs):
     from enigma import getDesktop
