@@ -57,7 +57,8 @@ def SaveDesktopInfo():
         try:
                 _g_dw = getDesktop(0).size().width()
                 _g_dh = getDesktop(0).size().height()
-        except: _g_dw,_g_dh = 1280,720
+        except:
+            _g_dw,_g_dh = 1280,720
         print "[XBMC] Desktop size [%dx%d]" % (_g_dw,_g_dh)
         open("/tmp/dw.info", "w").write(str(_g_dw) + "x" + str(_g_dh))
 SaveDesktopInfo()
@@ -312,7 +313,8 @@ class E2KodiExtServer(UDSServer):
         self.messageIn.put((self.kodiPlayer is not None, json.dumps(statusMessage)))
 
     def handlePlayStopMessage(self, status, data):
-        FBLock(); RCLock()
+        FBLock()
+        RCLock()
         self.messageIn.put((True, None))
 
     def handleSwitchToEnigma2Message(self, status, data):
@@ -329,7 +331,8 @@ class E2KodiExtServer(UDSServer):
             self.logger.error("handlePlayMessage: no data!")
             self.messageIn.put((False, None))
             return
-        FBUnlock(); RCUnlock()
+        FBUnlock()
+        RCUnlock()
 
         # parse subtitles, play path and service type from data
         sType = 4097
