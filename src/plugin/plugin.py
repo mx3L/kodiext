@@ -58,8 +58,8 @@ def SaveDesktopInfo():
                 _g_dw = getDesktop(0).size().width()
                 _g_dh = getDesktop(0).size().height()
         except:
-            _g_dw,_g_dh = 1280,720
-        print "[XBMC] Desktop size [%dx%d]" % (_g_dw,_g_dh)
+            _g_dw, _g_dh = 1280, 720
+        print "[XBMC] Desktop size [%dx%d]" % (_g_dw, _g_dh)
         open("/tmp/dw.info", "w").write(str(_g_dw) + "x" + str(_g_dh))
 SaveDesktopInfo()
 
@@ -371,7 +371,7 @@ class E2KodiExtServer(UDSServer):
                 meta = {}
 
         # create Kodi player Screen
-        noneFnc = lambda:None
+        noneFnc = lambda: None
         self.kodiPlayer = SESSION.openWithCallback(self.kodiPlayerExitCB, KodiVideoPlayer,
             noneFnc, noneFnc, noneFnc, noneFnc, noneFnc)
 

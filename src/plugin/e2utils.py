@@ -215,17 +215,17 @@ class InfoBarAspectChange(object):
     Simple aspect ratio changer
     """
     V_DICT = {
-        '16_9_letterbox':{'aspect':'16:9', 'policy2':'letterbox', 'title':'16:9 ' + _("Letterbox")},
-        '16_9_panscan':{'aspect':'16:9', 'policy2':'panscan', 'title':'16:9 ' + _("Pan&scan")},
-        '16_9_nonlinear':{'aspect':'16:9', 'policy2':'panscan', 'title':'16:9 ' + _("Nonlinear")},
-        '16_9_bestfit':{'aspect':'16:9', 'policy2':'bestfit', 'title':'16:9 ' + _("Just scale")},
-        '16_9_4_3_pillarbox':{'aspect':'16:9', 'policy':'pillarbox', 'title':'4:3 ' + _("PillarBox")},
-        '16_9_4_3_panscan':{'aspect':'16:9', 'policy':'panscan', 'title':'4:3 ' + _("Pan&scan")},
-        '16_9_4_3_nonlinear':{'aspect':'16:9', 'policy':'nonlinear', 'title':'4:3 ' + _("Nonlinear")},
-        '16_9_4_3_bestfit':{'aspect':'16:9', 'policy':'bestfit', 'title':_("Just scale")},
-        '4_3_letterbox':{'aspect':'4:3', 'policy':'letterbox', 'policy2':'policy', 'title':_("Letterbox")},
-        '4_3_panscan':{'aspect':'4:3', 'policy':'panscan', 'policy2':'policy', 'title':_("Pan&scan")},
-        '4_3_bestfit':{'aspect':'4:3', 'policy':'bestfit', 'policy2':'policy', 'title':_("Just scale")}
+        '16_9_letterbox': {'aspect': '16:9', 'policy2': 'letterbox', 'title': '16:9 ' + _("Letterbox")},
+        '16_9_panscan': {'aspect': '16:9', 'policy2': 'panscan', 'title': '16:9 ' + _("Pan&scan")},
+        '16_9_nonlinear': {'aspect': '16:9', 'policy2': 'panscan', 'title': '16:9 ' + _("Nonlinear")},
+        '16_9_bestfit': {'aspect': '16:9', 'policy2': 'bestfit', 'title': '16:9 ' + _("Just scale")},
+        '16_9_4_3_pillarbox': {'aspect': '16:9', 'policy': 'pillarbox', 'title': '4:3 ' + _("PillarBox")},
+        '16_9_4_3_panscan': {'aspect': '16:9', 'policy': 'panscan', 'title': '4:3 ' + _("Pan&scan")},
+        '16_9_4_3_nonlinear': {'aspect': '16:9', 'policy': 'nonlinear', 'title': '4:3 ' + _("Nonlinear")},
+        '16_9_4_3_bestfit': {'aspect': '16:9', 'policy': 'bestfit', 'title': _("Just scale")},
+        '4_3_letterbox': {'aspect': '4:3', 'policy': 'letterbox', 'policy2': 'policy', 'title': _("Letterbox")},
+        '4_3_panscan': {'aspect': '4:3', 'policy': 'panscan', 'policy2': 'policy', 'title': _("Pan&scan")},
+        '4_3_bestfit': {'aspect': '4:3', 'policy': 'bestfit', 'policy2': 'policy', 'title': _("Just scale")}
     }
 
     V_MODES = ['16_9_letterbox', '16_9_panscan', '16_9_nonlinear', '16_9_bestfit',
@@ -253,7 +253,7 @@ class InfoBarAspectChange(object):
 
         self["aspectChangeActions"] = HelpableActionMap(self, "InfoBarAspectChangeActions",
             {
-             "aspectChange":(self.toggleAspectRatio, _("Change aspect ratio"))
+             "aspectChange": (self.toggleAspectRatio, _("Change aspect ratio"))
               }, -3)
 
         self.onClose.append(self.__onClose)
