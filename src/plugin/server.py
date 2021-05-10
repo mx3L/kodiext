@@ -11,6 +11,7 @@ print "E2KODI_DEBUG_LVL = ", loglevel
 
 logging.basicConfig(level=loglevel, format='%(name)s: %(message)s',)
 
+
 class KodiExtRequestHandler(SocketServer.BaseRequestHandler):
 
     def __init__(self, request, client_address, server):
@@ -20,7 +21,7 @@ class KodiExtRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         hlen = struct.calcsize('ibi')
         header = self.request.recv(hlen)
-        opcode, status, datalen = struct.unpack('ibi',header)
+        opcode, status, datalen = struct.unpack('ibi', header)
         if datalen > 0:
             data = self.request.recv(datalen)
         else:

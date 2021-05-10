@@ -26,6 +26,7 @@ def toString(text):
         return text
     return str(text)
 
+
 def getAspect():
     val = AVSwitch().getAspectRatioSetting()
     if val == 0 or val == 1:
@@ -36,6 +37,7 @@ def getAspect():
         r = (16 * 576, 10 * 720)
     return r
 
+
 def getPlayPositionPts(session):
     service = session.nav.getCurrentService()
     seek = service and service.seek()
@@ -43,11 +45,13 @@ def getPlayPositionPts(session):
     position = position and not position[0] and position[1] or None
     return position
 
+
 def getPlayPositionInSeconds(session):
     position = getPlayPositionPts(session)
     if position is not None:
         position = position / 90000
     return position
+
 
 def getDurationPts(session):
     service = session.nav.getCurrentService()
@@ -56,11 +60,13 @@ def getDurationPts(session):
     duration = duration and not duration[0] and duration[1] or None
     return duration
 
+
 def getDurationInSeconds(session):
     duration = getDurationPts(session)
     if duration is not None:
         duration = duration / 90000
     return duration
+
 
 def seekToPts(session, pts):
     service = session.nav.getCurrentService()
@@ -82,7 +88,7 @@ class WebPixmap(GUIComponent):
         self.picload.PictureData.get().append(self.setPixmapCB)
 
     def applySkin(self, desktop, parent):
-        attribs = [ ]
+        attribs = []
         if self.skinAttributes is not None:
             for (attrib, value) in self.skinAttributes:
                 if attrib == "default":
@@ -169,8 +175,7 @@ class BufferIndicatorDetailed(Screen):
         self.updateIntervalInMs = updateIntervalInMs
         self.updateTimer = eTimer()
         self.updateTimer.callback.append(self.updateStatus)
-        self.__event_tracker = ServiceEventTracker(screen=self, eventmap=
-            {
+        self.__event_tracker = ServiceEventTracker(screen=self, eventmap={
                 iPlayableService.evBuffering: self.__evBuffering,
                 iPlayableService.evStart: self.__evStart,
                 iPlayableService.evStopped: self.__evStopped,
@@ -211,29 +216,29 @@ class InfoBarBuffer(object):
         self.onClose.append(self.bufferScreen.hide)
         self.onClose.append(self.bufferScreen.doClose)
 
+
 class InfoBarAspectChange(object):
     """
     Simple aspect ratio changer
     """
     V_DICT = {
-        '16_9_letterbox':{'aspect':'16:9', 'policy2':'letterbox', 'title':'16:9 ' + _("Letterbox")},
-        '16_9_panscan':{'aspect':'16:9', 'policy2':'panscan', 'title':'16:9 ' + _("Pan&scan")},
-        '16_9_nonlinear':{'aspect':'16:9', 'policy2':'panscan', 'title':'16:9 ' + _("Nonlinear")},
-        '16_9_bestfit':{'aspect':'16:9', 'policy2':'bestfit', 'title':'16:9 ' + _("Just scale")},
-        '16_9_4_3_pillarbox':{'aspect':'16:9', 'policy':'pillarbox', 'title':'4:3 ' + _("PillarBox")},
-        '16_9_4_3_panscan':{'aspect':'16:9', 'policy':'panscan', 'title':'4:3 ' + _("Pan&scan")},
-        '16_9_4_3_nonlinear':{'aspect':'16:9', 'policy':'nonlinear', 'title':'4:3 ' + _("Nonlinear")},
-        '16_9_4_3_bestfit':{'aspect':'16:9', 'policy':'bestfit', 'title':_("Just scale")},
-        '4_3_letterbox':{'aspect':'4:3', 'policy':'letterbox', 'policy2':'policy', 'title':_("Letterbox")},
-        '4_3_panscan':{'aspect':'4:3', 'policy':'panscan', 'policy2':'policy', 'title':_("Pan&scan")},
-        '4_3_bestfit':{'aspect':'4:3', 'policy':'bestfit', 'policy2':'policy', 'title':_("Just scale")}
+        '16_9_letterbox': {'aspect': '16:9', 'policy2': 'letterbox', 'title': '16:9 ' + _("Letterbox")},
+        '16_9_panscan': {'aspect': '16:9', 'policy2': 'panscan', 'title': '16:9 ' + _("Pan&scan")},
+        '16_9_nonlinear': {'aspect': '16:9', 'policy2': 'panscan', 'title': '16:9 ' + _("Nonlinear")},
+        '16_9_bestfit': {'aspect': '16:9', 'policy2': 'bestfit', 'title': '16:9 ' + _("Just scale")},
+        '16_9_4_3_pillarbox': {'aspect': '16:9', 'policy': 'pillarbox', 'title': '4:3 ' + _("PillarBox")},
+        '16_9_4_3_panscan': {'aspect': '16:9', 'policy': 'panscan', 'title': '4:3 ' + _("Pan&scan")},
+        '16_9_4_3_nonlinear': {'aspect': '16:9', 'policy': 'nonlinear', 'title': '4:3 ' + _("Nonlinear")},
+        '16_9_4_3_bestfit': {'aspect': '16:9', 'policy': 'bestfit', 'title': _("Just scale")},
+        '4_3_letterbox': {'aspect': '4:3', 'policy': 'letterbox', 'policy2': 'policy', 'title': _("Letterbox")},
+        '4_3_panscan': {'aspect': '4:3', 'policy': 'panscan', 'policy2': 'policy', 'title': _("Pan&scan")},
+        '4_3_bestfit': {'aspect': '4:3', 'policy': 'bestfit', 'policy2': 'policy', 'title': _("Just scale")}
     }
 
     V_MODES = ['16_9_letterbox', '16_9_panscan', '16_9_nonlinear', '16_9_bestfit',
         '16_9_4_3_pillarbox', '16_9_4_3_panscan', '16_9_4_3_nonlinear', '16_9_4_3_bestfit',
         '4_3_letterbox', '4_3_panscan', '4_3_bestfit'
     ]
-
 
     def __init__(self):
         self.postAspectChange = []
@@ -254,7 +259,7 @@ class InfoBarAspectChange(object):
 
         self["aspectChangeActions"] = HelpableActionMap(self, "InfoBarAspectChangeActions",
             {
-             "aspectChange":(self.toggleAspectRatio, _("Change aspect ratio"))
+             "aspectChange": (self.toggleAspectRatio, _("Change aspect ratio"))
               }, -3)
 
         self.onClose.append(self.__onClose)
@@ -348,8 +353,8 @@ class StatusScreen(Screen):
 # pretty much openpli's one but simplified
 class InfoBarSubservicesSupport(object):
     def __init__(self):
-        self["InfoBarSubservicesActions"] = HelpableActionMap(self, 
-                "ColorActions", { "green": (self.showSubservices, _("Show subservices"))}, -2)
+        self["InfoBarSubservicesActions"] = HelpableActionMap(self,
+                "ColorActions", {"green": (self.showSubservices, _("Show subservices"))}, -2)
         self.__timer = eTimer()
         self.__timer.callback.append(self.__seekToCurrentPosition)
         self.onClose.append(self.__timer.stop)
@@ -369,8 +374,8 @@ class InfoBarSubservicesSupport(object):
             choice_list.append((subservice_ref.getName(), subservice_ref))
         if numsubservices > 1:
             self.session.openWithCallback(self.subserviceSelected, ChoiceBox,
-                title = _("Please select subservice..."), list = choice_list, 
-                selection = selection, skin_name="SubserviceSelection")
+                title=_("Please select subservice..."), list=choice_list,
+                selection=selection, skin_name="SubserviceSelection")
 
     def subserviceSelected(self, service_ref):
         if service_ref:
@@ -388,4 +393,3 @@ class InfoBarSubservicesSupport(object):
         else:
             seekToPts(self.session, self.__playpos)
             del self.__playpos
-
