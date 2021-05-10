@@ -159,7 +159,7 @@ class KodiVideoPlayer(InfoBarBase, SubsSupportStatus, SubsSupport, InfoBarShowHi
 
         self.eventTracker = ServiceEventTracker(self,
         {
-            iPlayableService.evStart : self.__evStart,
+            iPlayableService.evStart: self.__evStart,
         })
         self.onClose.append(boundFunction(self.session.deleteDialog, self.statusScreen))
         self.onClose.append(boundFunction(Notifications.RemovePopup, self.RESUME_POPUP_ID))

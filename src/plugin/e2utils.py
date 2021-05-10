@@ -82,7 +82,7 @@ class WebPixmap(GUIComponent):
         self.picload.PictureData.get().append(self.setPixmapCB)
 
     def applySkin(self, desktop, parent):
-        attribs = [ ]
+        attribs = []
         if self.skinAttributes is not None:
             for (attrib, value) in self.skinAttributes:
                 if attrib == "default":
@@ -348,7 +348,7 @@ class StatusScreen(Screen):
 class InfoBarSubservicesSupport(object):
     def __init__(self):
         self["InfoBarSubservicesActions"] = HelpableActionMap(self, 
-                "ColorActions", { "green": (self.showSubservices, _("Show subservices"))}, -2)
+                "ColorActions", {"green": (self.showSubservices, _("Show subservices"))}, -2)
         self.__timer = eTimer()
         self.__timer.callback.append(self.__seekToCurrentPosition)
         self.onClose.append(self.__timer.stop)
